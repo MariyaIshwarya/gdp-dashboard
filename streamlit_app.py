@@ -1,151 +1,168 @@
+import thirdai
 import streamlit as st
-import pandas as pd
-import math
-from pathlib import Path
+import nltk
+import os
+import time
+from thirdai import licensing, neural_db as ndb
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
-)
+#nltk.download("punkt")
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+if "040B5B-584193-865E93-356F4A-5CF05F-V3" :
+    licensing.activate("040B5B-584193-865E93-356F4A-5CF05F-V3")
+db = ndb.NeuralDB()
+insertable_docs = []
+#streamlit run D.py
+#doc_files = [r"D:\coding\Python\Policy\accidental-death-benefit-rider-brochure.pdf", r"D:\coding\Python\Policy\cash-back-plan-brochuree.pdf", r"D:\coding\Python\Policy\gold-brochure.pdf", r"D:\coding\Python\Policy\guaranteed-protection-plus-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-csc-shubhlabh-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-elite-term-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-guaranteed-benefit-plan-brochure1.pdf", r"D:\coding\Python\Policy\indiafirst-life-insurance-khata-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-little-champ-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-long-guaranteed-income-plan-brochure.pdf",r"D:\coding\Python\Policy\indiafirst-life-micro-bachat-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-radiance-smart-investment-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-saral-bachat-bima-A-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-saral-jeevan-bima-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-smart-pay-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-maha-jeevan-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-money-balance-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-pos-cash-back-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-simple-benefit-plan-brochure.pdf", r"D:\coding\Python\Policy\single-premium-brochure.pdf", r"D:\coding\Python\Policy\smart-save-plan-brochure.pdf", r"D:\coding\Python\Policy\tulip-brochure.pdf", r"D:\coding\Python\Policy\wealth-maximizer-brochure.pdf"] 
+doc_files = [r"D:\coding\Python\Policy\accidental-death-benefit-rider-brochure.pdf", r"D:\coding\Python\Policy\cash-back-plan-brochuree.pdf", r"D:\coding\Python\Policy\gold-brochure.pdf", r"D:\coding\Python\Policy\guaranteed-protection-plus-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-csc-shubhlabh-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-elite-term-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-guaranteed-benefit-plan-brochure1.pdf", r"D:\coding\Python\Policy\indiafirst-life-insurance-khata-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-little-champ-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-long-guaranteed-income-plan-brochure.pdf",r"D:\coding\Python\Policy\indiafirst-life-micro-bachat-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-radiance-smart-investment-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-saral-bachat-bima-A-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-saral-jeevan-bima-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-life-smart-pay-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-maha-jeevan-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-money-balance-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-pos-cash-back-plan-brochure.pdf", r"D:\coding\Python\Policy\indiafirst-simple-benefit-plan-brochure.pdf", r"D:\coding\Python\Policy\single-premium-brochure.pdf", r"D:\coding\Python\Policy\smart-save-plan-brochure.pdf", r"D:\coding\Python\Policy\tulip-brochure.pdf", r"D:\coding\Python\Policy\wealth-maximizer-brochure.pdf"] 
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+#doc_files = ["C:\\Users\\kamal\\OneDrive\\Desktop\\InsuranceBot\\Policies -  1.CSC Shubhlabh Plan.csv"]
+for file in doc_files:
+    doc = ndb.PDF(file)
+    insertable_docs.append(doc)
+db.insert(insertable_docs, train=False)
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+if "OPENAI_API_KEY" not in os.environ:
+    st.secrets.os.environ["OPENAI_API_KEY"] =API_KEY
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+from openai import OpenAI
+def generate_answers(query, references):
+    openai_client = OpenAI()
+    context = "\n\n".join(references[:3])
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+    #prompt = f"As an insurance expert, provide a direct and concise answer to the following question, focusing on any numerical or quantitative aspects first. Use the provided context and explain only the most relevant terms if necessary:\n\nQuestion: {query}\n\nContext: {context}\n\nPlease avoid asking for additional information unless absolutely necessary, and give a clear answer based on the available context."
+    prompt = f"""
+As an insurance expert of IndiaFirst Life Company , your task is to provide a direct and concise answer to the following question using the information from the referenced documents. Prioritize any numerical or quantitative data, and only explain key terms if they are essential to understanding the answer.
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
+**Question:** {query}
+
+**Context:** Review the content from the documents listed below:
+{", ".join([f'Document {i+1}' for i in range(len(doc_files))])}
+
+**Instructions:**
+-greet the user only once and answer with little respect.
+-You strictly don't have to greet the user every single time.
+- Focus on delivering a clear, factual answer using the data from the {doc_files}.
+-first read the {doc_files} completely and answer by analysing the questions carefully. 
+- Highlight numerical values, percentages, or any other quantitative information first.
+- Pay close attention to data presented in tabular columns within the {doc_files}. Extract and reference this tabular data accurately, as it often contains key details such as coverage amounts, premium rates, benefits, and terms. Use this structured information to support your answer, ensuring that any figures or statistics you mention are drawn directly from these tables.
+- Try to provie the answers with similar words from the {doc_files}.
+- Ensure that all money-related values are provided in Indian Rupees (INR).
+- Only explain relevant terms if they are crucial for understanding the response.
+- Avoid asking for additional information unless absolutely necessary.
+- Respond based solely on the content of the provided {doc_files}.
+-Do not answer 18 years for all the {query} asking about age .
+- carefully check if the {query} is about age og entry or age og maturity and give anwsers accordingly.
+- carefully check if the {query} is about Whole of Life Income Option   or Definite Income Option  and give anwsers accordingly.
+Provide the most accurate answer possible given the context.
+The example of how you should answer is given below :
+question: What is the minimum age at entry for Definite Income Option in Long Guaranteed Income Plan  ?
+answer :8 years  is the minimum age at entry for Definite Income Option 
+question: What is the maximum age at entry for the Definite Income Option under this policy in Long Guaranteed Income Plan?
+answer:  50 years is the maximum age at entry for the Definite Income Option under this policy"""
+
+    messages = [{"role": "user", "content": prompt}]
+
+    response = openai_client.chat.completions.create(
+        model="gpt-3.5-turbo", messages=messages, temperature=0
+    )
+    return response.choices[0].message.content
+
+def generate_queries_chatgpt(original_query):
+    openai_client = OpenAI()
+    response = openai_client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that generates multiple search queries based on a single input query."},
+            {"role": "user", "content": f"Generate multiple search queries related to: {original_query}"},
+            {"role": "user", "content": "OUTPUT (5 queries):"}
+        ]
     )
 
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+    generated_queries = response.choices[0].message.content.strip().split("\n")
+    return generated_queries
 
-    return gdp_df
+def get_references(query):
+    search_results = db.search(query, top_k=100)
+    references = []
+    for result in search_results:
+        references.append(result.text)
+    return references
 
-gdp_df = get_gdp_data()
+def reciprocal_rank_fusion(reference_list, k=60):
+    fused_scores = {}
+        
+    for i in reference_list:
+        for rank, j in enumerate(i):
+            if j not in fused_scores:
+                fused_scores[j] = 0
+            fused_scores[j] += 1 / ((rank+1) + k)
+    
+    reranked_results = {}
+    sorted_fused_scores = sorted(fused_scores.items(), key=lambda x: x[1], reverse=True)
+    for j, score in sorted_fused_scores:
+        reranked_results[j] = score
+    return reranked_results
 
-# -----------------------------------------------------------------------------
-# Draw the actual page
+def get_answer(query, r):
+    return generate_answers(
+        query=query,
+        references=r
+    )
 
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
+st.set_page_config(page_title="Insurance Bot", page_icon=":robot_face:", layout="centered")
 
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
+def main():
+    st.title("Insurance Bot 🤖")
+    st.write("Who summon me here!")
+    st.write("Is it You, What you want to know?🧙‍♀️ ")
 
-# Add some spacing
-''
-''
+    if "chat_history" not in st.session_state:
+        st.session_state["chat_history"] = []
 
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
+    chat_placeholder = st.empty()
 
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
+    display_chat_history(chat_placeholder)
 
-countries = gdp_df['Country Code'].unique()
+    query = st.chat_input("Enter your question...", key="unique_query_input")
 
-if not len(countries):
-    st.warning("Select at least one country")
+    if query:
+        st.session_state["chat_history"].append({"user": query, "bot": "..."})
 
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
+        display_chat_history(chat_placeholder)
 
-''
-''
-''
+        #with st.spinner("Bot is typing..."):
+        query_list = generate_queries_chatgpt(query)
+        reference_list = [get_references(q) for q in query_list]
+        r = reciprocal_rank_fusion(reference_list)
+        ranked_reference_list = list(r.keys())
+        ans = get_answer(query, ranked_reference_list)
 
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
+        st.session_state["chat_history"][-1]["bot"] = ans
 
-st.header('GDP over time', divider='gray')
+        display_chat_history(chat_placeholder)
 
-''
+def display_chat_history(placeholder):
+    with placeholder.container():
+        for chat in st.session_state["chat_history"]:
+            st.markdown(f"""
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                    <div style="background-color: #e8f5e9; padding: 10px; border-radius: 5px; max-width: 60%;">
+                        <strong>You:</strong> {chat['user']} <span style="font-size: 20px;">👤</span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
 
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
+            if chat['bot']:
+                st.markdown(f"""
+                    <div style="display: flex; justify-content: flex-start; margin-bottom: 10px;">
+                        <div style="background-color: #e0f7fa; padding: 10px; border-radius: 5px; max-width: 60%;">
+                            <span style="font-size: 20px;">🤖</span> <strong>Bot:</strong> {chat['bot']}
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
 
-''
-''
+if __name__ == "__main__":
+    main()
 
 
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
 
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
-
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
