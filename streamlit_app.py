@@ -7,8 +7,8 @@ from thirdai import licensing, neural_db as ndb
 
 #nltk.download("punkt")
 
-if "040B5B-584193-865E93-356F4A-5CF05F-V3" :
-    licensing.activate("040B5B-584193-865E93-356F4A-5CF05F-V3")
+if 'THIRD_AI_KEY'not in os.environ :
+    licensing.activate(os.getenv('THIRD_AI_KEY'))
 db = ndb.NeuralDB()
 insertable_docs = []
 #streamlit run D.py
@@ -22,7 +22,7 @@ for file in doc_files:
 db.insert(insertable_docs, train=False)
 
 if "OPENAI_API_KEY" not in os.environ:
-    st.secrets.os.environ["OPENAI_API_KEY"] =API_KEY
+    os.environ["OPENAI_API_KEY"] =os.getenv('OPEN_AI_KEY')
 
 from openai import OpenAI
 def generate_answers(query, references):
@@ -163,6 +163,7 @@ def display_chat_history(placeholder):
 
 if __name__ == "__main__":
     main()
+
 
 
 
