@@ -3,3 +3,5 @@ pandas
 thirdai
 openai
 nltk
+licensing 
+neural_db 
