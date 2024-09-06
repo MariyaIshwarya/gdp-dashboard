@@ -22,7 +22,7 @@ for file in doc_files:
 db.insert(insertable_docs, train=False)
 
 if "OPENAI_API_KEY" not in os.environ:
-    os.environ["OPENAI_API_KEY"] ="sk-z5K0poyx5zkKdXs8UaIbi3a-hbBzb5YQ45Dk2aINZlT3BlbkFJLe0kxK2ADxEdya3J8FVrtUnPDFpn_xQLeWQbQxo3oA"
+    st.secrets.os.environ["OPENAI_API_KEY"] ="sk-z5K0poyx5zkKdXs8UaIbi3a-hbBzb5YQ45Dk2aINZlT3BlbkFJLe0kxK2ADxEdya3J8FVrtUnPDFpn_xQLeWQbQxo3oA"
 
 from openai import OpenAI
 def generate_answers(query, references):
